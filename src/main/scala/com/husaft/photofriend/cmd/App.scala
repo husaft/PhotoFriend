@@ -20,6 +20,8 @@ object App {
     // Work on options
     if (cfg.listAlbums)
       listAlbums(api, user)
+    else if (cfg.listPhotos)
+      listPhotos(api, cfg.photoSetId)
   }
 
   def listAlbums(api: Flickr, user: String) {
@@ -33,7 +35,22 @@ object App {
       val title = album.getTitle
       val desc = album.getDescription
       val views = album.getViewCount
-      println(s"${views}\t${title}\t'${desc}'")
+      val id = album.getId
+      println(s"${id}\t${title}\t${desc}\t${views}")
+    }
+  }
+
+  def listPhotos(api: Flickr, setId: Long) {
+    // Get photos
+    val psi = api.getPhotosetsInterface;
+    val allPhotos = psi.getPhotos(setId + "", 1024, 1);
+    println(s"${allPhotos.getTotal} photos found.")
+    // Loop over them
+    for (photo <- allPhotos) {
+      val id = photo.getId
+      val desc = photo.getDescription
+      val title = photo.getTitle
+      println(s"${id}\t${title}\t${desc}")
     }
   }
 }

@@ -11,8 +11,14 @@ object Program {
     val parser = new OptionParser[Config](appName) {
       head(appName, appVer)
 
-      opt[Unit]("albums").action((_, c) =>
+      opt[Unit]('a', "albums").action((_, c) =>
         c.copy(listAlbums = true)).text("list your albums")
+
+      opt[Unit]('p', "photos").action((_, c) =>
+        c.copy(listPhotos = true)).text("list your photos")
+
+      opt[Long]('s', "set").action((v, c) =>
+        c.copy(photoSetId = v)).text("the photo set's id")
 
       help("help").text("prints this usage text")
     }
