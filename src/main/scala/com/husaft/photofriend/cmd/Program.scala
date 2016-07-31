@@ -1,5 +1,7 @@
 package com.husaft.photofriend.cmd
 
+import java.io.File
+
 import scopt.OptionParser
 
 object Program {
@@ -17,8 +19,16 @@ object Program {
       opt[Unit]('p', "photos").action((_, c) =>
         c.copy(listPhotos = true)).text("list your photos")
 
+      opt[Unit]('u', "sync").action((_, c) =>
+        c.copy(syncFolder = true)).text("sync your folder")
+
       opt[Long]('s', "set").action((v, c) =>
         c.copy(photoSetId = v)).text("the photo set's id")
+        .valueName("<id>")
+
+      opt[File]('f', "folder").action((v, c) =>
+        c.copy(folder = v)).text("the local folder")
+        .valueName("<path>")
 
       help("help").text("prints this usage text")
     }

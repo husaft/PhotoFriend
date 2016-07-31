@@ -1,10 +1,14 @@
 package com.husaft.photofriend.cmd
 
+import java.io.File
+
 import scala.collection.JavaConversions.collectionAsScalaIterable
 
 import com.flickr4java.flickr.Flickr
 import com.flickr4java.flickr.REST
 import com.typesafe.config.ConfigFactory
+import com.flickr4java.flickr.uploader.Uploader
+import com.flickr4java.flickr.uploader.UploadMetaData
 
 object App {
 
@@ -17,11 +21,16 @@ object App {
     val user = conf.getString(prefix + "user")
     // Create API handle
     val api = new Flickr(key, secret, new REST());
+    // Authenticate yourself
+    val auth = AuthIt.doAuth(api)
+    api.setAuth(auth)
     // Work on options
     if (cfg.listAlbums)
       listAlbums(api, user)
     else if (cfg.listPhotos)
       listPhotos(api, cfg.photoSetId)
+    else if (cfg.syncFolder)
+      syncFolder(api, cfg.folder, cfg.photoSetId)
   }
 
   def listAlbums(api: Flickr, user: String) {
@@ -52,5 +61,39 @@ object App {
       val title = photo.getTitle
       println(s"${id}\t${title}\t${desc}")
     }
+  }
+
+  def syncFolder(api: Flickr, folder: File, setId: Long) {
+    val picExts = List("png", "jpg")
+    val files = Helper.getListOfFiles(folder, picExts)
+    val psi = api.getPhotosetsInterface;
+    val photos = psi.getPhotos(setId + "", 1024, 1);
+    val pmap = photos.map { p => (p.getTitle, p) }.toMap
+    val upl = api.getUploader
+    for (file <- files) {
+      var name = file.getName
+      picExts.foreach { e => name = name.replace("." + e, "") }
+      val exists = pmap.contains(name)
+      if (!exists)
+        upload(upl, file, setId)
+    }
+  }
+
+  def upload(api: Uploader, file: File, setId: Long) {
+    println(s"Uploading '${file}' to ${setId}...")
+    val parts = file.getName.split("\\.")
+    val name = parts(0)
+    val ext = parts(1)
+    val mime = "image/" + ext
+    val data = new UploadMetaData()
+    data.setContentType(mime)
+    data.setDescription(null)
+    data.setFilemimetype(mime)
+    data.setFilename(name)
+    data.setHidden(false)
+    data.setPublicFlag(true)
+    data.setTitle(name)
+    val pid = api.upload(file, data)
+    println(s" --> got photo id ${pid}!")
   }
 }
