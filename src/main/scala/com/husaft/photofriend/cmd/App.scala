@@ -30,7 +30,7 @@ object App {
     else if (cfg.listPhotos)
       listPhotos(api, cfg.photoSetId)
     else if (cfg.syncFolder)
-      syncFolder(api, cfg.folder, cfg.photoSetId)
+      syncFolder(api, cfg.folder, cfg.photoSetId, cfg.noUpload)
   }
 
   def listAlbums(api: Flickr, user: String) {
@@ -63,7 +63,7 @@ object App {
     }
   }
 
-  def syncFolder(api: Flickr, folder: File, setId: Long) {
+  def syncFolder(api: Flickr, folder: File, setId: Long, noUpload: Boolean) {
     val picExts = List("png", "jpg")
     val files = Helper.getListOfFiles(folder, picExts)
     val psi = api.getPhotosetsInterface;
@@ -75,11 +75,11 @@ object App {
       picExts.foreach { e => name = name.replace("." + e, "") }
       val exists = pmap.contains(name)
       if (!exists)
-        upload(upl, file, setId)
+        upload(upl, file, setId, noUpload)
     }
   }
 
-  def upload(api: Uploader, file: File, setId: Long) {
+  def upload(api: Uploader, file: File, setId: Long, noUpload: Boolean) {
     println(s"Uploading '${file}' to ${setId}...")
     val parts = file.getName.split("\\.")
     val name = parts(0)
@@ -93,7 +93,9 @@ object App {
     data.setHidden(false)
     data.setPublicFlag(true)
     data.setTitle(name)
-    val pid = api.upload(file, data)
-    println(s" --> got photo id ${pid}!")
+    if (!noUpload) {
+      val pid = api.upload(file, data)
+      println(s" --> got photo id ${pid}!")
+    }
   }
 }

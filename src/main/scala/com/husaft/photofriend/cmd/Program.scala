@@ -30,6 +30,9 @@ object Program {
         c.copy(folder = v)).text("the local folder")
         .valueName("<path>")
 
+      opt[Unit]('n', "noUpload").action((_, c) =>
+        c.copy(noUpload = true)).text("don't upload anything")
+
       help("help").text("prints this usage text")
     }
     // Parse arguments

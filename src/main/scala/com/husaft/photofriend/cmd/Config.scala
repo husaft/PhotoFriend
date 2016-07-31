@@ -7,4 +7,5 @@ case class Config(
   listPhotos: Boolean = false,
   syncFolder: Boolean = false,
   photoSetId: Long = -1L,
-  folder: File = new File("."))
+  folder: File = new File("."),
+  noUpload: Boolean = false)
